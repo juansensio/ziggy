@@ -18,3 +18,4 @@ Check version with `zig version`.
 - [Learning resources](https://ziglang.org/learn/)
 - [Guide](https://zig.guide/)
 - [Documentation](https://ziglang.org/documentation/master)
+- [Community](https://github.com/ziglang/zig/wiki/Community)
