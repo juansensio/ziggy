@@ -4,5 +4,8 @@ basic:
 functions:
 	zig run functions.zig
 
+memory:
+	zig run memory.zig
+
 test:
-	zig test tests.zig
+	zig build test
