@@ -1,4 +1,29 @@
 const std = @import("std");
+const print = std.debug.print;
+const sleep = std.Thread.sleep;
+
+const NY: i32 = 30;
+const NX: i32 = 50;
+const NITS: i32 = 100;
+const SLEEP_TIME: i32 = 100;
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var grid = try Grid.init(allocator, NY, NX);
+    defer grid.deinit(allocator);
+    var updated_grid = try Grid.init(allocator, NY, NX);
+    defer updated_grid.deinit(allocator);
+
+    var it: i32 = 0;
+    while (it < NITS) : (it += 1) {
+        update_grid(grid, updated_grid);
+        // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
+        print_grid(grid, it);
+        sleep(SLEEP_TIME * std.time.ns_per_ms);
+    }
+}
 
 pub const Grid = struct {
     data: []u8,
@@ -26,3 +51,76 @@ pub const Grid = struct {
         self.data[i * self.nx + j] = value;
     }
 };
+
+pub fn update_grid(grid: Grid, new_grid: Grid) void {
+    for (0..grid.ny) |i| {
+        for (0..grid.nx) |j| {
+            const num_alive_neighbors = compute_alive_neighbors(grid, i, j);
+            // apply the rules
+            if (grid.get(i, j) == 1) {
+                if (num_alive_neighbors < 2 or num_alive_neighbors > 3) {
+                    new_grid.set(i, j, 0);
+                } else {
+                    new_grid.set(i, j, 1);
+                }
+            } else {
+                if (num_alive_neighbors == 3) {
+                    new_grid.set(i, j, 1);
+                } else {
+                    new_grid.set(i, j, 0);
+                }
+            }
+        }
+    }
+    for (0..grid.ny) |i| {
+        for (0..grid.nx) |j| {
+            grid.set(i, j, new_grid.get(i, j));
+        }
+    }
+}
+
+fn compute_alive_neighbors(grid: Grid, i: usize, j: usize) u8 {
+    const ny = grid.ny;
+    const nx = grid.nx;
+    var num_alive_neighbors: u8 = 0;
+    // compute the number of alive neighbors
+    if (i > 0) {
+        if (j > 0) {
+            num_alive_neighbors += grid.get(i - 1, j - 1);
+        }
+        if (j < nx - 1) {
+            num_alive_neighbors += grid.get(i - 1, j + 1);
+        }
+        num_alive_neighbors += grid.get(i - 1, j);
+    }
+    if (i < ny - 1) {
+        if (j > 0) {
+            num_alive_neighbors += grid.get(i + 1, j - 1);
+        }
+        if (j < nx - 1) {
+            num_alive_neighbors += grid.get(i + 1, j + 1);
+        }
+        num_alive_neighbors += grid.get(i + 1, j);
+    }
+    if (j > 0) {
+        num_alive_neighbors += grid.get(i, j - 1);
+    }
+    if (j < nx - 1) {
+        num_alive_neighbors += grid.get(i, j + 1);
+    }
+    return num_alive_neighbors;
+}
+
+fn print_grid(grid: Grid, it: i32) void {
+    print("\nIteration {}\n", .{it});
+    for (0..grid.ny) |i| {
+        for (0..grid.nx) |j| {
+            if (grid.get(i, j) == 1) {
+                print("#", .{});
+            } else {
+                print(" ", .{});
+            }
+        }
+        print("\n", .{});
+    }
+}

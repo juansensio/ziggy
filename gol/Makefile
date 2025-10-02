@@ -7,5 +7,8 @@ functions:
 memory:
 	zig run memory.zig
 
+struct:
+	zig run struct.zig
+
 test:
 	zig build test
