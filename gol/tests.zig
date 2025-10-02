@@ -2,7 +2,7 @@ const std = @import("std");
 const expect = std.testing.expect;
 const print = std.debug.print;
 
-const memory = @import("memory");
+const memory = @import("memory.zig");
 
 test "test_memory_init_grid" {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};

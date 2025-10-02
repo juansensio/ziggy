@@ -10,5 +10,8 @@ memory:
 struct:
 	zig run struct.zig
 
+benchmark:
+	zig run benchmark.zig
+
 test:
-	zig build test
+	zig test tests.zig
