@@ -13,14 +13,17 @@ pub fn main() !void {
         memmory_implementation(n, n, its);
         var end = std.time.nanoTimestamp();
         var elapsed_ns = end - start;
+        const iters_per_sec = @as(f64, its) / (@as(f64, elapsed_ns) / 1_000_000_000.0);
         print("Memory implementation\n", .{});
-        print("n: {}, its: {}, time: {} ns\n", .{ n, its, elapsed_ns });
+        print("n: {}, its: {}, time: {} ns, iterations/sec: {d:.2}\n", .{ n, its, elapsed_ns, iters_per_sec });
+
         start = std.time.nanoTimestamp();
         try struct_implementation(n, n, its);
         end = std.time.nanoTimestamp();
         elapsed_ns = end - start;
+        const struct_iters_per_sec = @as(f64, its) / (@as(f64, elapsed_ns) / 1_000_000_000.0);
         print("Struct implementation\n", .{});
-        print("n: {}, its: {}, time: {} ns\n", .{ n, its, elapsed_ns });
+        print("n: {}, its: {}, time: {} ns, iterations/sec: {d:.2}\n", .{ n, its, elapsed_ns, struct_iters_per_sec });
     }
 }
 
