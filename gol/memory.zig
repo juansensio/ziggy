@@ -12,19 +12,18 @@ pub fn main() void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const grid = init_grid(allocator, NY, NX);
+    var grid = init_grid(allocator, NY, NX);
     defer deinit_grid(allocator, grid);
+    var updated_grid = init_grid(allocator, NY, NX);
+    defer deinit_grid(allocator, updated_grid);
 
-    print("grid.len: {}\n", .{grid.len});
-    print("grid[0].len: {}\n", .{grid[0].len});
-
-    // var it: i32 = 0;
-    // while (it < NITS) : (it += 1) {
-    //     const updated_grid = update_grid(grid);
-    //     print_grid(updated_grid, it);
-    //     grid = updated_grid;
-    //     sleep(SLEEP_TIME * std.time.ns_per_ms);
-    // }
+    var it: i32 = 0;
+    while (it < NITS) : (it += 1) {
+        update_grid(&grid, &updated_grid);
+        // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
+        print_grid(grid, it);
+        sleep(SLEEP_TIME * std.time.ns_per_ms);
+    }
 }
 
 // pub so I can import in tests
@@ -46,30 +45,33 @@ pub fn deinit_grid(allocator: std.mem.Allocator, grid: [][]u8) void {
     allocator.free(grid);
 }
 
-pub fn update_grid(grid: [][]u8) [][]u8 {
-    const ny = grid.len;
-    const nx = grid[0].len;
-    var new_grid: [ny][nx]u8 = undefined;
+pub fn update_grid(grid: *[][]u8, new_grid: *[][]u8) void {
+    const ny = grid.*.len;
+    const nx = grid.*[0].len;
     for (0..ny) |i| {
         for (0..nx) |j| {
-            const num_alive_neighbors = compute_alive_neighbors(grid, i, j);
+            const num_alive_neighbors = compute_alive_neighbors(grid.*, i, j);
             // apply the rules
-            if (grid[i][j] == 1) {
+            if (grid.*[i][j] == 1) {
                 if (num_alive_neighbors < 2 or num_alive_neighbors > 3) {
-                    new_grid[i][j] = 0;
+                    new_grid.*[i][j] = 0;
                 } else {
-                    new_grid[i][j] = 1;
+                    new_grid.*[i][j] = 1;
                 }
             } else {
                 if (num_alive_neighbors == 3) {
-                    new_grid[i][j] = 1;
+                    new_grid.*[i][j] = 1;
                 } else {
-                    new_grid[i][j] = 0;
+                    new_grid.*[i][j] = 0;
                 }
             }
         }
     }
-    return new_grid;
+    for (0..ny) |i| {
+        for (0..nx) |j| {
+            grid.*[i][j] = new_grid.*[i][j];
+        }
+    }
 }
 
 fn compute_alive_neighbors(grid: [][]u8, i: usize, j: usize) u8 {

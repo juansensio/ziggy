@@ -1,5 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
+const print = std.debug.print;
 
 const memory = @import("memory");
 
@@ -24,8 +25,10 @@ test "test_memory_update_grid" {
 
     const ny = 5;
     const nx = 5;
-    const grid = memory.init_grid(allocator, ny, nx);
+    var grid = memory.init_grid(allocator, ny, nx);
     defer memory.deinit_grid(allocator, grid);
+    var updated_grid = memory.init_grid(allocator, ny, nx);
+    defer memory.deinit_grid(allocator, updated_grid);
 
     // Initialize grid with a "blinker" pattern (vertical in the center)
     // 0 0 0 0 0
@@ -43,11 +46,10 @@ test "test_memory_update_grid" {
     grid[3][2] = 1;
 
     // Update grid
-    const updated_grid = memory.update_grid(grid);
-    defer memory.deinit_grid(allocator, updated_grid);
+    memory.update_grid(&grid, &updated_grid);
 
     // Check if the grid has updated correctly
-    try expect(updated_grid[1][2] == 0);
-    try expect(updated_grid[2][2] == 1);
-    try expect(updated_grid[3][2] == 0);
+    try expect(grid[1][2] == 0);
+    try expect(grid[2][2] == 1);
+    try expect(grid[3][2] == 0);
 }
