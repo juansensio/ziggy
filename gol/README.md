@@ -4,8 +4,9 @@ Zig implementation of the [Game of Life](https://en.wikipedia.org/wiki/Conway%27
 
 - [x] Basic implementation: lots of loops, lots of if-else statements
 - [x] Functions (but still with pre-defined grid size)
-- [ ] Allocator (so we can use dynamic grid size, required for testing)
-- [ ] Testing
+- [x] Allocator (so we can use dynamic grid size, required for testing)
+- [x] Testing
+- [ ] Structs (so we can simplify the code, memory allocation and assignments)
 - [ ] Benchmarking
 - [ ] Vectorized implementation
 - [ ] Parallelization
