@@ -18,7 +18,7 @@ pub fn main() !void {
 
     var it: i32 = 0;
     while (it < NITS) : (it += 1) {
-        update_grid(grid, updated_grid);
+        update_grid(&grid, &updated_grid);
         // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
         print_grid(grid, it);
         sleep(SLEEP_TIME * std.time.ns_per_ms);
@@ -52,10 +52,10 @@ pub const Grid = struct {
     }
 };
 
-pub fn update_grid(grid: Grid, new_grid: Grid) void {
+pub fn update_grid(grid: *Grid, new_grid: *Grid) void {
     for (0..grid.ny) |i| {
         for (0..grid.nx) |j| {
-            const num_alive_neighbors = compute_alive_neighbors(grid, i, j);
+            const num_alive_neighbors = compute_alive_neighbors(grid.*, i, j);
             // apply the rules
             if (grid.get(i, j) == 1) {
                 if (num_alive_neighbors < 2 or num_alive_neighbors > 3) {
