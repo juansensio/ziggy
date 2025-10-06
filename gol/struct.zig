@@ -7,25 +7,31 @@ const NX: i32 = 50;
 const NITS: i32 = 100;
 const SLEEP_TIME: i32 = 100;
 pub fn main() !void {
+    try struct_implementation(NY, NX, NITS, true);
+}
+
+pub fn struct_implementation(ny: usize, nx: usize, its: i32, show_grid: bool) !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var grid = try Grid.init(allocator, NY, NX);
+    var grid = try Grid.init(allocator, ny, nx);
     defer grid.deinit(allocator);
-    var updated_grid = try Grid.init(allocator, NY, NX);
+    var updated_grid = try Grid.init(allocator, ny, nx);
     defer updated_grid.deinit(allocator);
 
     var it: i32 = 0;
-    while (it < NITS) : (it += 1) {
+    while (it < its) : (it += 1) {
         update_grid(&grid, &updated_grid);
         // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
-        print_grid(grid, it);
-        sleep(SLEEP_TIME * std.time.ns_per_ms);
+        if (show_grid) {
+            print_grid(grid, it);
+            sleep(SLEEP_TIME * std.time.ns_per_ms);
+        }
     }
 }
 
-pub const Grid = struct {
+const Grid = struct {
     data: []u8,
     ny: usize,
     nx: usize,
@@ -52,7 +58,7 @@ pub const Grid = struct {
     }
 };
 
-pub fn update_grid(grid: *Grid, new_grid: *Grid) void {
+fn update_grid(grid: *Grid, new_grid: *Grid) void {
     for (0..grid.ny) |i| {
         for (0..grid.nx) |j| {
             const num_alive_neighbors = compute_alive_neighbors(grid.*, i, j);

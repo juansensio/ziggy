@@ -7,27 +7,32 @@ const NX: i32 = 50;
 const NITS: i32 = 100;
 const SLEEP_TIME: i32 = 100;
 
-pub fn main() void {
+pub fn main() !void {
+    try memmory_implementation(NY, NX, NITS, true);
+}
+
+pub fn memmory_implementation(ny: usize, nx: usize, its: i32, show_grid: bool) !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var grid = init_grid(allocator, NY, NX);
+    var grid = init_grid(allocator, ny, nx);
     defer deinit_grid(allocator, grid);
-    var updated_grid = init_grid(allocator, NY, NX);
+    var updated_grid = init_grid(allocator, ny, nx);
     defer deinit_grid(allocator, updated_grid);
 
     var it: i32 = 0;
-    while (it < NITS) : (it += 1) {
+    while (it < its) : (it += 1) {
         update_grid(&grid, &updated_grid);
-        // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
-        print_grid(grid, it);
-        sleep(SLEEP_TIME * std.time.ns_per_ms);
+        if (show_grid) {
+            print_grid(grid, it);
+            sleep(SLEEP_TIME * std.time.ns_per_ms);
+        }
     }
 }
 
 // pub so I can import in tests
-pub fn init_grid(allocator: std.mem.Allocator, ny: usize, nx: usize) [][]u8 {
+fn init_grid(allocator: std.mem.Allocator, ny: usize, nx: usize) [][]u8 {
     var grid = allocator.alloc([]u8, ny) catch unreachable;
     for (0..ny) |i| {
         grid[i] = allocator.alloc(u8, nx) catch unreachable;
@@ -38,14 +43,14 @@ pub fn init_grid(allocator: std.mem.Allocator, ny: usize, nx: usize) [][]u8 {
     return grid;
 }
 
-pub fn deinit_grid(allocator: std.mem.Allocator, grid: [][]u8) void {
+fn deinit_grid(allocator: std.mem.Allocator, grid: [][]u8) void {
     for (grid) |row| {
         allocator.free(row);
     }
     allocator.free(grid);
 }
 
-pub fn update_grid(grid: *[][]u8, new_grid: *[][]u8) void {
+fn update_grid(grid: *[][]u8, new_grid: *[][]u8) void {
     const ny = grid.*.len;
     const nx = grid.*[0].len;
     for (0..ny) |i| {
