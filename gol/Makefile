@@ -10,6 +10,9 @@ memory:
 struct:
 	zig run struct.zig
 
+vectorized:
+	zig run vectorized.zig
+
 benchmark:
 	zig run benchmark.zig
 

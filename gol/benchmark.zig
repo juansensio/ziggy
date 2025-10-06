@@ -3,6 +3,7 @@ const print = std.debug.print;
 
 const memory = @import("memory.zig");
 const _struct = @import("struct.zig");
+const vectorized = @import("vectorized.zig");
 
 pub fn main() !void {
     const ns = [_]usize{ 10, 100, 500 };
@@ -10,6 +11,7 @@ pub fn main() !void {
     const runs = 10;
     try runBenchmark("Memory implementation", memory.memmory_implementation, &ns, its, runs);
     try runBenchmark("Struct implementation", _struct.struct_implementation, &ns, its, runs);
+    try runBenchmark("Vectorized implementation", vectorized.vectorized_implementation, &ns, its, runs);
 }
 
 fn runBenchmark(

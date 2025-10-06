@@ -31,7 +31,6 @@ pub fn memmory_implementation(ny: usize, nx: usize, its: i32, show_grid: bool) !
     }
 }
 
-// pub so I can import in tests
 fn init_grid(allocator: std.mem.Allocator, ny: usize, nx: usize) [][]u8 {
     var grid = allocator.alloc([]u8, ny) catch unreachable;
     for (0..ny) |i| {
