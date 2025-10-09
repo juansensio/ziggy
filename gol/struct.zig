@@ -7,31 +7,42 @@ const NX: i32 = 50;
 const NITS: i32 = 100;
 const SLEEP_TIME: i32 = 100;
 pub fn main() !void {
-    try struct_implementation(NY, NX, NITS, true);
-}
-
-pub fn struct_implementation(ny: usize, nx: usize, its: i32, show_grid: bool) !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var grid = try Grid.init(allocator, ny, nx);
-    defer grid.deinit(allocator);
-    var updated_grid = try Grid.init(allocator, ny, nx);
-    defer updated_grid.deinit(allocator);
-
-    var it: i32 = 0;
-    while (it < its) : (it += 1) {
-        update_grid(&grid, &updated_grid);
-        // defer deinit_grid(allocator, updated_grid); // if deinit then grid segfaults
-        if (show_grid) {
-            print_grid(grid, it);
-            sleep(SLEEP_TIME * std.time.ns_per_ms);
-        }
-    }
+    var gol = try GOL.init(allocator, NY, NX);
+    defer gol.deinit();
+    try gol.update(NITS, true);
 }
 
-const Grid = struct {
+pub const GOL = struct {
+    grid: Grid,
+    updated_grid: Grid,
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator, ny: usize, nx: usize) !GOL {
+        return GOL{ .grid = try Grid.init(allocator, ny, nx), .updated_grid = try Grid.init(allocator, ny, nx), .allocator = allocator };
+    }
+
+    pub fn deinit(self: *GOL) void {
+        self.grid.deinit(self.allocator);
+        self.updated_grid.deinit(self.allocator);
+    }
+
+    pub fn update(self: *GOL, its: i32, show_grid: bool) !void {
+        var it: i32 = 0;
+        while (it < its) : (it += 1) {
+            update_grid(&self.grid, &self.updated_grid);
+            if (show_grid) {
+                print_grid(self.grid, it);
+                sleep(SLEEP_TIME * std.time.ns_per_ms);
+            }
+        }
+    }
+};
+
+pub const Grid = struct {
     data: []u8,
     ny: usize,
     nx: usize,
@@ -58,7 +69,7 @@ const Grid = struct {
     }
 };
 
-fn update_grid(grid: *Grid, new_grid: *Grid) void {
+pub fn update_grid(grid: *Grid, new_grid: *Grid) void {
     for (0..grid.ny) |i| {
         for (0..grid.nx) |j| {
             const num_alive_neighbors = compute_alive_neighbors(grid.*, i, j);

@@ -8,28 +8,40 @@ const NITS: i32 = 100;
 const SLEEP_TIME: i32 = 100;
 
 pub fn main() !void {
-    try memmory_implementation(NY, NX, NITS, true);
-}
-
-pub fn memmory_implementation(ny: usize, nx: usize, its: i32, show_grid: bool) !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var grid = init_grid(allocator, ny, nx);
-    defer deinit_grid(allocator, grid);
-    var updated_grid = init_grid(allocator, ny, nx);
-    defer deinit_grid(allocator, updated_grid);
+    var gol = try GOL.init(allocator, NY, NX);
+    defer gol.deinit();
+    try gol.update(NITS, true);
+}
 
-    var it: i32 = 0;
-    while (it < its) : (it += 1) {
-        update_grid(&grid, &updated_grid);
-        if (show_grid) {
-            print_grid(grid, it);
-            sleep(SLEEP_TIME * std.time.ns_per_ms);
+pub const GOL = struct {
+    grid: [][]u8,
+    updated_grid: [][]u8,
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator, ny: usize, nx: usize) !GOL {
+        return GOL{ .grid = init_grid(allocator, ny, nx), .updated_grid = init_grid(allocator, ny, nx), .allocator = allocator };
+    }
+
+    pub fn deinit(self: *GOL) void {
+        deinit_grid(self.allocator, self.grid);
+        deinit_grid(self.allocator, self.updated_grid);
+    }
+
+    pub fn update(self: *GOL, its: i32, show_grid: bool) !void {
+        var it: i32 = 0;
+        while (it < its) : (it += 1) {
+            update_grid(&self.grid, &self.updated_grid);
+            if (show_grid) {
+                print_grid(self.grid, it);
+                sleep(SLEEP_TIME * std.time.ns_per_ms);
+            }
         }
     }
-}
+};
 
 fn init_grid(allocator: std.mem.Allocator, ny: usize, nx: usize) [][]u8 {
     var grid = allocator.alloc([]u8, ny) catch unreachable;

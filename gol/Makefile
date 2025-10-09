@@ -10,8 +10,11 @@ memory:
 struct:
 	zig run struct.zig
 
-vectorized:
-	zig run vectorized.zig
+matrix:
+	zig run matrix.zig
+
+sparse:
+	zig run sparse.zig
 
 benchmark:
 	zig run benchmark.zig

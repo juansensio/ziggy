@@ -8,6 +8,8 @@ Zig implementation of the [Game of Life](https://en.wikipedia.org/wiki/Conway%27
 - [x] Testing
 - [x] Structs (so we can simplify the code, memory allocation and assignments)
 - [x] Benchmarking (add benchamrk to build so can import from other scripts)
-- [ ] Vectorized implementation
+- [x] matrix multiplication
+- [x] sparse matrix multiplication
+- [ ] better memory management (packing, caching, reusing)
 - [ ] Parallelization
-- [ ] sparse matrix multiplication
+- [ ] Vectorized implementation
